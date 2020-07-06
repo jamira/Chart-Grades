@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <title>Vanilla JS | Chart Grades</title>
+</head>
+<body>
+    
+    <script type="text/javascript">
+
+        function createCanvas() {
+            const canvas = document.createElement("canvas");
+            canvas.setAttribute("id", "chart");
+            canvas.width = "800";
+            canvas.height = "300";
+            
+            document.body.prepend(canvas)
+        }
+
+        async function getGrades() {
+            const response = await fetch("./data/grades.csv");
+            const grades = await response.text();
+            
+            // use split to have line break
+            // use slice to remove or get rid the field name
+            const table = grades.split('\n').slice(1);
+
+            // initialize empty array to stack my labels & data
+            const dataLabel = [];
+            const dataGrades = [];
+
+            // cycle through to get index element
+            table.forEach(item => {
+                const cols = item.split(',');
+                const lname = cols[0];
+                dataLabel.push(lname);
+                const grade = cols[7];
+                dataGrades.push(grade);
+            });
+
+            return { dataLabel,  dataGrades}
+        }        
+        
+        async function myChart() {
+            const tmp = await getGrades();
+            const ctx = document.getElementById('chart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: tmp.dataLabel,
+                    xAxisID: 'sas',
+                    datasets: [{
+                        label: 'Student Grades (Final Grading Period)',
+                        data: tmp.dataGrades,
+                        fill: false,
+                        backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+                        borderColor: ['rgba(255, 99, 132, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return value + ' %';
+                                }
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Grades',
+                                fontSize: 18,
+                                fontColor: '#ff6284'
+                            }
+                        }],
+                        xAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Student Last Name',
+                                fontSize: 18,
+                                fontColor: '#ff6284'
+                            }
+                        }]
+                    }
+                } 
+            });            
+        }
+
+        createCanvas(); 
+        myChart();
+
+    </script>
+</body>
+</html>
